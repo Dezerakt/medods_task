@@ -1,0 +1,55 @@
+version: "3.3"
+
+networks:
+  default_network:
+    driver: bridge
+
+services:
+  app:
+    image: golang:1.20.2-alpine
+    stdin_open: true
+    container_name: auth-app
+    working_dir: "/app"
+    networks:
+      - default_network
+    ports:
+      - "8080:8080"
+    tty: true
+    volumes:
+      - ".:/app"
+    depends_on:
+      - postgres
+    command: >
+      sh -c "go run cmd/main.go"
+
+
+  postgres:
+    image: postgres:15.3
+    container_name: auth-pg
+    user: postgres
+    networks:
+      - default_network
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: "auth_db"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      TZ: "Asia/Almaty"
+      PGTZ: "Asia/Almaty"
+
+  pgadmin:
+    container_name: auth-pgadmin
+    image: dpage/pgadmin4:7.4
+    networks:
+      - default_network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: 123
+    ports:
+      - "8000:80"
+    depends_on:
+      - postgres
+
+
