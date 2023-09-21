@@ -1,0 +1,11 @@
+show collections
+use auth_db
+show collections
+use auth_db
+show collections
+show dbs
+use auth_db
+show dbs
+db.getUsers()
+show dbsn")
+show dbs

@@ -21,6 +21,12 @@ type EnvConfig struct {
 	DbPassword string `mapstructure:"DB_PASSWORD"`
 	DbName     string `mapstructure:"DB_NAME"`
 
+	MongoHost     string `mapstructure:"MONGO_HOST"`
+	MongoPort     string `mapstructure:"MONGO_PORT"`
+	MongoUser     string `mapstructure:"MONGO_USER"`
+	MongoPassword string `mapstructure:"MONGO_PASSWORD"`
+	MongoDb       string `mapstructure:"MONGO_DB"`
+
 	JwtSecretKey string `mapstructure:"JWT_SECRET_KEY"`
 }
 

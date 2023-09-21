@@ -31,5 +31,9 @@ func (c *ConfigLoader) LoadConfig() error {
 		return err
 	}
 
+	if err = c.DbConfig.ConnectToMongo(c.EnvConfig); err != nil {
+		return err
+	}
+
 	return nil
 }

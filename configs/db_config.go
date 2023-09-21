@@ -1,8 +1,11 @@
 package configs
 
 import (
+	"context"
 	"fmt"
 	"github.com/fatih/color"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -11,7 +14,8 @@ import (
 )
 
 var (
-	DbObject *gorm.DB
+	DbObject    *gorm.DB
+	MongoObject *mongo.Client
 
 	TablesList = []interface{}{
 		models.User{},
@@ -39,6 +43,29 @@ func (d *DbConfig) ConnectToDatabase(config *EnvConfig) error {
 	}
 
 	log.Println(color.GreenString("Соединение с базой данных успешно"))
+
+	return nil
+}
+
+func (d *DbConfig) ConnectToMongo(config *EnvConfig) error {
+	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s", config.MongoUser, config.MongoPassword, config.MongoHost, config.MongoPort))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		return err
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	MongoObject = client
+
+	log.Println(color.GreenString("Соединение с Mongo успешно"))
 
 	return nil
 }
