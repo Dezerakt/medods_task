@@ -3,7 +3,9 @@ package actions
 import (
 	"errors"
 	"github.com/beevik/guid"
-	"gorm.io/gorm"
+	"github.com/gookit/goutil/dump"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"medods_task/internal/app/models"
 	"medods_task/internal/app/repositories"
 	"medods_task/internal/app/utils"
@@ -18,7 +20,7 @@ func NewLoginAction(GUID *guid.Guid) *Login {
 }
 
 func (l *Login) Execute() (map[string]interface{}, error) {
-	targetUser, err := l.userInit()
+	targetUserId, err := l.userInit()
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +30,9 @@ func (l *Login) Execute() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	l.saveTokenCouple(accessToken, refreshToken, targetUser.ID)
+	dump.P(targetUserId)
+
+	//l.saveTokenCouple(accessToken, refreshToken, targetUserId)
 
 	// Не очень понял из задания - refresh токен в формате в base64 передается только
 	// при передаче в запросе, или ещё и при генерации?
@@ -38,26 +42,27 @@ func (l *Login) Execute() (map[string]interface{}, error) {
 	}, nil
 }
 
-func (l *Login) userInit() (*models.User, error) {
-	userRepository := repositories.NewUserRepository()
+func (l *Login) userInit() (interface{}, error) {
+	userDao := repositories.NewUserDAO()
 
-	targetUser, err := userRepository.GetByGUID(l.GUID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		createdUser, err2 := userRepository.Create(&models.User{
-			GUID: l.GUID.String(),
-		})
-		if err2 != nil {
-			return nil, err2
+	targetUser, err := userDao.Find(&models.User{
+		GUID: l.GUID.String(),
+	})
+
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		targetUser, err := userDao.InsertOne(&models.User{GUID: l.GUID.String()})
+		if err != nil {
+			return "", err
 		}
 
-		targetUser = createdUser.(*models.User)
+		return targetUser.InsertedID, nil
 	} else if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return targetUser, nil
+	return targetUser.ID, nil
 }
 
-func (l *Login) saveTokenCouple(accessToken string, refreshToken string, userId uint) {
+func (l *Login) saveTokenCouple(accessToken string, refreshToken string, userId primitive.ObjectID) {
 
 }

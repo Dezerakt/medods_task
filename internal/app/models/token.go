@@ -1,10 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Token struct {
-	gorm.Model
-	UserId uint `gorm:"column:user_id"`
+	ID     primitive.ObjectID `bson:"_id,omitempty"`
+	UserId string             `bson:"guid"`
 }
 
 func (t *Token) model() {

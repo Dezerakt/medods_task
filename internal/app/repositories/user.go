@@ -1,10 +1,9 @@
 package repositories
 
 import (
-	"context"
+	context "context"
 	"github.com/beevik/guid"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"medods_task/configs"
 	"medods_task/internal/app/models"
 )
@@ -37,11 +36,22 @@ func NewUserDAO() *UserDAO {
 	}
 }
 
-func (d *UserDAO) InsertOne(item bson.M) (*mongo.InsertOneResult, error) {
-	result, err := d.Collection.InsertOne(context.Background(), item)
+func (d *UserDAO) InsertOne(item *models.User) (*models.User, error) {
+	item.ID = primitive.NewObjectID()
+	_, err := d.Collection.InsertOne(context.Background(), item)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return item, nil
+}
+
+func (d *UserDAO) Find(query *models.User) (*models.User, error) {
+	var targetUser models.User
+	err := d.Collection.FindOne(context.Background(), query).Decode(&targetUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return &targetUser, nil
 }

@@ -1,14 +1,11 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type User struct {
-	gorm.Model
-	GUID string `gorm:"column:guid; size:255;"`
-
-	Token Token `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ID           primitive.ObjectID `bson:"_id,omitempty"`
+	GUID         string             `bson:"guid,omitempty"`
+	RefreshToken string             `bson:"refresh_token,omitempty"`
 }
 
 func (u *User) model() {
